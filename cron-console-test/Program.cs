@@ -8,20 +8,63 @@ namespace cron_console_test
     {
         private static AutoResetEvent waitHandle = new AutoResetEvent(false);
 
-        private static readonly CronDaemon cron_daemon = new CronDaemon();        
+        private static readonly CronDaemon cron_daemon = new CronDaemon();
 
-        public static int count = 0;    
+        public static int count = 0;
 
         static void Main(string[] args)
         {
+            string valor = "teste";
+            cron_daemon.AddJob(
+                Guid.NewGuid(),
+                "* * * * *",
+                (sender, e) =>
+                {
+                    Console.WriteLine("Job 1. {0} - {1}", e.Argument, DateTime.Now);
+                },
+                param: valor);
+
+            Guid idJob2 = Guid.NewGuid();
+
+            cron_daemon.AddJob(
+                idJob2,
+                "*/2 * * * *",
+                (sender, e) =>
+                {
+                    Console.WriteLine("Job 2. {0} - {1}", e.Argument, DateTime.Now);
+                },
+                param: valor);
             
-            cron_daemon.AddJob("* * * * *", ()=>{
-                Console.WriteLine("Job 1. {0}", DateTime.Now);
-            });
-            cron_daemon.AddJob("*/2 * * * *", ()=>{
-                Console.WriteLine("Job 2. {0}", DateTime.Now);
-            });
+            cron_daemon.AddJob(
+                Guid.NewGuid(),
+                "28 17 * * *",
+                (sender, e) =>
+                {
+                    Console.WriteLine("Job 17:28. {0} - {1}", e.Argument, DateTime.Now);
+                },
+                param: valor);
+            
             cron_daemon.Start();
+            Console.WriteLine("Stated {0}", DateTime.Now);
+
+            Thread.Sleep(TimeSpan.FromMinutes(3));
+            cron_daemon.RemoveJob(idJob2);
+            Console.WriteLine("Job 2 - {0} removed", idJob2);
+
+            Thread.Sleep(TimeSpan.FromSeconds(20));
+            cron_daemon.AddJob(
+                Guid.NewGuid(),
+                "* * * * *",
+                (sender, e) =>
+                {
+                    Console.WriteLine("Job 3. {0} - {1}", e.Argument, DateTime.Now);
+                },
+                param: valor);
+
+            Console.WriteLine("Job 3 added ", idJob2);
+
+            // cron_daemon.Stop();
+            // Console.WriteLine("Stoped {0}", DateTime.Now);
 
             // Wait and sleep forever. Let the cron daemon run.
             //while(true) Thread.Sleep(6000);
@@ -43,7 +86,7 @@ namespace cron_console_test
         {
             count++;
             Console.WriteLine("Hello, world. {0} - {1}", count, DateTime.Now);
-                        
+
         }
     }
 }

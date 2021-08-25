@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading;
 using System.Timers;
 using cron_core.contracts;
@@ -10,7 +12,7 @@ namespace cron_core
     {
         private readonly System.Timers.Timer timer = new System.Timers.Timer(30000);
         private readonly List<ICronJob> cron_jobs = new List<ICronJob>();
-        private DateTime _last= DateTime.Now;
+        private DateTime _last = DateTime.Now;
 
         public CronDaemon()
         {
@@ -18,10 +20,21 @@ namespace cron_core
             timer.Elapsed += timer_elapsed;
         }
 
-        public void AddJob(string schedule, ThreadStart action)
+        public void AddJob(Guid id, string schedule, DoWorkEventHandler doWork, object param)
         {
-            var cj = new CronJob(schedule, action);
+            var cj = new CronJob(id, schedule, param, doWork);
             cron_jobs.Add(cj);
+        }
+
+        public void RemoveJob(Guid id)
+        {
+            var job = this.cron_jobs.FirstOrDefault(x => x.Id == id);
+
+            if (job != null)
+            {
+                job.Abort();
+                this.cron_jobs.Remove(job);
+            }
         }
 
         public void Start()
@@ -34,7 +47,7 @@ namespace cron_core
             timer.Stop();
 
             foreach (CronJob job in cron_jobs)
-                job.abort();
+                job.Abort();
         }
 
         private void timer_elapsed(object sender, ElapsedEventArgs e)

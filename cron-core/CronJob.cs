@@ -8,16 +8,22 @@ namespace cron_core
     public class CronJob : ICronJob
     {
         private readonly ICronSchedule _cron_schedule = new CronSchedule();
-        private readonly ThreadStart _thread_start;
-        private Thread _thread;
         
+        private BackgroundWorker backgroundWorker;
+        private object _param;
 
-        public CronJob(string schedule, ThreadStart thread_start)
+        public Guid Id { get; set; }
+    
+
+        public CronJob(Guid id, string schedule, object param, DoWorkEventHandler doWork)
         {
             _cron_schedule = new CronSchedule(schedule);
-            _thread_start = thread_start;
-            _thread = new Thread(thread_start);
-            
+            _param = param;
+
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.WorkerSupportsCancellation = true;
+            backgroundWorker.DoWork+= doWork;            
+
         }
 
         private object _lock = new object();
@@ -28,18 +34,18 @@ namespace cron_core
                 if (!_cron_schedule.isTime(date_time))
                     return;
 
-                if (_thread.ThreadState == ThreadState.Running)
+                if (backgroundWorker.IsBusy == true)
                     return;
 
-                _thread = new Thread(_thread_start);
-                _thread.Start();
+                backgroundWorker.RunWorkerAsync(this._param);
             }
         }
 
-        public void abort()
+        public void Abort()
         {
-            //TODO: Refactor
-          //_thread.Abort();  
+            if (backgroundWorker.IsBusy)
+                backgroundWorker.CancelAsync();
+            
         }
 
     }
