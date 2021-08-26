@@ -27,7 +27,7 @@ namespace cron_core
         }
 
         private object _lock = new object();
-        public void execute(DateTime date_time)
+        public void Execute(DateTime date_time)
         {
             lock (_lock)
             {

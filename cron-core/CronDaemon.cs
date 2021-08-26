@@ -61,7 +61,7 @@ namespace cron_core
             {
                 _last = DateTime.Now;
                 foreach (ICronJob job in cron_jobs)
-                    job.execute(DateTime.Now);
+                    job.Execute(DateTime.Now);
             }
         }
     }
