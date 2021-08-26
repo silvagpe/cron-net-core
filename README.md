@@ -1,4 +1,4 @@
-# Simple Cron .net
+# Simple Multi jobs cron .net
 
 This project was refactored from https://github.com/kevincolyar/CronNET
 
