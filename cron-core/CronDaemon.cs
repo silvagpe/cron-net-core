@@ -20,7 +20,12 @@ namespace cron_core
             timer.Elapsed += timer_elapsed;
         }
 
-        public void AddJob(Guid id, string schedule, DoWorkEventHandler doWork, object param)
+        public void AddJob(Guid id, string schedule, DoWorkEventHandler doWork)
+        {
+            AddJob(id, schedule, null, doWork);
+        }
+
+        public void AddJob(Guid id, string schedule, object param, DoWorkEventHandler doWork)
         {
             var cj = new CronJob(id, schedule, param, doWork);
             cron_jobs.Add(cj);
